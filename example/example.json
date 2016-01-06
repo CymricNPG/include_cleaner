@@ -1,0 +1,28 @@
+{
+  "__Config__": {
+    "debug": true,
+    "nr_compile_processes": "5",
+    "skip_keyword_match": false,
+    "root_path": "/home/<PATH TO INCLUDE CLEANER>/include_cleaner/example",
+    "file_extensions": [".h", ".hpp", ".cpp"],
+    "file_excludes": ["build"],
+    "include_ignores": [],
+    "include_paths": [ "./"   ],
+    "ignore_dependency_paths": [],
+
+    "ignore_package_cluster" : false,
+
+    "dependencies": {
+      "AB_LIB": ["C_LIB"]
+    },
+    "libraries": {
+      "AB_LIB": ["A_PACKAGE", "B_PACKAGE"],
+      "C_LIB": ["C_PACKAGE"]
+    },
+    "packages": {
+      "A_PACKAGE": ["A"],
+      "B_PACKAGE": ["B"],
+      "C_PACKAGE": ["C"]
+    }
+  }
+}

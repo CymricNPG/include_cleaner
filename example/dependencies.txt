@@ -1,0 +1,2 @@
+dependencies = 
+{u'C_LIB': [u'AB_LIB'], u'AB_LIB': [u'C_LIB']}

@@ -1,0 +1,50 @@
+{
+  "__Config__": {
+    "__doc__" : "An example configuration for the include cleaner scripts",
+
+    "debug": true,  "__doc__debug" : "Logs more info to the console",
+
+    "nr_compile_processes": "5",  "__doc__ncp" : "Number of compile process used in 'make -j <>'",
+
+    "skip_keyword_match": false,  "__doc__skm" : "false: skips include files which are used in the header, if the filename in the #include is found in the header, this include isn't removed",
+
+    "root_path": "/home/user/project", "__doc__rp" : "Absolute path to the project, used as root for all include paths",
+
+    "file_extensions": [".h", ".hpp", ".cpp"], "__doc__fex" : "only process files with these extensions",
+
+    "file_excludes": ["lib/", "CMake", "doc/", "test/"], "__doc__f_excl" : "Ignore all files with these substrings (no regexp!)",
+
+    "include_ignores": ["optional_io", "numpy"], "__doc__i_i" : "Ignore the #includes which contain these keywords",
+
+
+    "include_paths": [
+      "include", "src/include"
+    ], "__doc__i_p" : "All include path prefixes used in the project",
+
+    "__doc__dependency" : "The following part is only used for the dependency analysis",
+
+    "ignore_dependency_paths": ["test/", "boost/"], "__doc__idg" : "Files with these substrings are ignored",
+
+    "ignore_package_cluster" : true, "__doc__p_c" : "Do not cluster the packages by there libraries",
+
+     "packages": {
+      "definition": ["src/parameter", "include/parameter", "include/component"],
+      "definition_api": ["include/api/definition"],
+      "model": ["src/process", "include/process"],
+      "model_api": ["include/process-engine"]
+    }, "__doc__pac" : "Paths used by a package, it is assumed, that all files below the given paths are belong to this package, the package name will be used below",
+
+    "libraries": {
+      "definition": ["definition"],
+      "model": ["model"],
+      "api": ["definition_api", "model_api"]
+    }, "__doc__lib" : "A library consists of packages",
+
+
+    "dependencies": {
+      "definition": ["api"],
+      "model": ["definition", "api"]
+    }, "__doc__dep" : "Allowed dependencies, read: 'key'-library depends on 'values'-libraries, if a library has no dependencies, skip it. Use for key and values the names of the libraries "
+
+  }
+}
