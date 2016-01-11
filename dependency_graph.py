@@ -25,11 +25,19 @@ def write_lib_graph(data):
         output.write("digraph G {\n")
         for src in dependencies.keys():
             for dst in dependencies[src]:
+                line = ""
                 if src in myConfig.dependencies and dst in myConfig.dependencies[src]:
                     line = src + " -> " + dst + ";\n"
                 else:
                     line = src + " -> " + dst + " [color = red];\n"
                 output.write(line)
+        for src in myConfig.dependencies:
+            for dst in myConfig.dependencies[src]:
+                if src in dependencies and dst in dependencies[src]:
+                    continue
+                else:
+                    line = src + " -> " + dst + " [color = blue];\n"
+                    output.write(line)
         output.write("}\n")
 
 def build_package_cluster_name(container):
