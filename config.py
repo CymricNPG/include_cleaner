@@ -11,7 +11,9 @@ def get_config():
     global _config
     if _config is None:
         if len(sys.argv) <= 1:
-            raise ValueError("Missing configuration in arguments, call e.g. 'dependency_graph.py my_config.json'', Given Arguments= " + str(sys.argv))
+            raise ValueError(
+                "Missing configuration in arguments, call e.g. 'dependency_graph.py my_config.json'', Given Arguments= " + str(
+                    sys.argv))
         _config = Config(sys.argv[1])
     return _config
 
@@ -28,5 +30,6 @@ class Config:
                 setattr(self, name, value)
 
         # Log config
-        logging.basicConfig(format='%(levelname)s  %(filename)s %(lineno)d :  %(message)s', level=logging.INFO,
+        level = logging.DEBUG if self.debug else logging.INFO
+        logging.basicConfig(format='%(levelname)s  %(filename)s %(lineno)d :  %(message)s', level=level,
                             stream=sys.stdout)

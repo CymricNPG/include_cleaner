@@ -9,18 +9,9 @@ __author__ = 'cymric@npg.net'
 myConfig = config.get_config()
 
 
-def write_lib_dependencies(data):
-    log_block("writing library dependencies")
-    dependencies = build_lib_dependencies(data)
-    with open('dependencies.txt', 'w') as output:
-        output.write("dependencies = \n")
-        output.write(str(dependencies))
-        output.write("\n")
-
-
 def write_lib_graph(data):
     log_block("writing library dependency graph")
-    dependencies = build_lib_dependencies(data)
+    dependencies, ignore = build_lib_dependencies(data)
     with open('libraries.gv', 'w') as output:
         output.write("digraph G {\n")
         for src in dependencies.keys():
@@ -88,8 +79,6 @@ def write_package_graph(data):
 data = prepare_include_data()
 
 write_lib_graph(data)
-
-write_lib_dependencies(data)
 
 write_package_graph(data)
 

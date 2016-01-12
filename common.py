@@ -10,9 +10,13 @@ __author__ = 'cymric@npg.net'
 
 myConfig = config.get_config()
 
+def is_ignored_dependency(filename):
+    return any(x in filename for x in myConfig.ignore_dependency_paths)
 
 def find_package_for_file(filename, data):
     if filename in data.unknown_libraries:
+        return None
+    if is_ignored_dependency(filename):
         return None
     for package in myConfig.packages:
         for path in myConfig.packages[package]:
@@ -23,10 +27,11 @@ def find_package_for_file(filename, data):
     return None
 
 
-def find_lib_for_file(filename, data):
+def find_lib_for_file(include, data):
+    filename = data.include_path_mapping[include] if include in data.include_path_mapping else include
     if filename in data.unknown_libraries:
         return None
-    if any(x in filename for x in myConfig.ignore_dependency_paths):
+    if is_ignored_dependency(filename):
         data.unknown_libraries[filename] = True
         return None
     if filename in data.file_lib_cache:
@@ -42,26 +47,53 @@ def find_lib_for_file(filename, data):
     return None
 
 
+def find_includes_for_file(filename, data):
+    for cfile in data.all_includes:
+        if filename in cfile:
+            return data.all_includes[cfile]
+    return None
+
+class Dependency:
+    def __init__(self, src, dst, src_lib, dst_lib):
+        self.src = src
+        self.dst = dst
+        self.src_lib = src_lib
+        self.dst_lib = dst_lib
+
 def build_lib_dependencies(data):
     dependencies = {}
-    already_written = {}
+    full_dependencies = []
     for cfile in data.files:
+        if cfile.endswith(tuple(myConfig.header_extensions)):
+            continue
+        # only process cpp
         src = find_lib_for_file(cfile, data)
         if src is None:
             continue
         for include in data.all_includes[cfile]:
-            dst = None
-            if include in data.include_path_mapping:
-                dst = find_lib_for_file(data.include_path_mapping[include], data)
-            else:
-                dst = find_lib_for_file(include, data)
-            if dst is None or src is dst:
+            if is_ignored_dependency(include):
                 continue
-            line = src + "->" + dst
-            if line not in already_written:
-                already_written[line] = True
-                dependencies.setdefault(src, []).append(dst)
-    return dependencies
+            dst = find_lib_for_file(include, data)
+            if dst is None or src is dst:
+                # could be the header for the cpp file .. so resolve it
+                indirect_includes = find_includes_for_file(include, data)
+                if not indirect_includes:
+                    logging.debug("Not using:" + cfile + " -> " + include)
+                    continue
+                for indirect_include in indirect_includes:
+                    if is_ignored_dependency(indirect_include):
+                        continue
+                    dst = find_lib_for_file(indirect_include, data)
+                    if dst is None or src is dst:
+                        logging.debug("Not using (indirect):" + cfile + " -> " + indirect_include)
+                        continue
+                    else:
+                        dependencies.setdefault(src, {})[dst] = True
+                        full_dependencies.append(Dependency(cfile, indirect_include, src, dst))
+            else:
+                dependencies.setdefault(src, {})[dst] = True
+                full_dependencies.append(Dependency(cfile, include, src, dst))
+    return dependencies, full_dependencies
 
 
 class IncludeStruct:
@@ -171,13 +203,13 @@ def find_includes_in_file(file, includes_from_file, data):
         if inc_line.find("<") > -1:
             include = re.search('<(.+)>', inc_line).group(1)
             if include in local_sys_includes:
-                logging.warn(" Duplicate include found:"+include)
+                logging.warn(" Duplicate include found:" + include)
             else:
                 local_sys_includes.append(include)
         elif inc_line.find('"') > -1:
             include = re.search('"(.+)"', inc_line).group(1)
             if include in local_includes:
-                logging.warn(" Duplicate include found:"+include)
+                logging.warn(" Duplicate include found:" + include)
             else:
                 local_includes.append(include)
                 if include not in data.include_path_mapping:
@@ -238,4 +270,3 @@ def remove_files_without_includes(data):
     for file in data.no_includes:
         logging.info("Processing: " + file)
         remove_file_from_includes(file, " removed from:", data)
-
