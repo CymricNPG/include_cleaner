@@ -48,6 +48,8 @@ def find_lib_for_file(include, data):
 
 
 def find_includes_for_file(filename, data):
+    if "." not in filename:
+        return None
     for cfile in data.all_includes:
         if filename in cfile:
             return data.all_includes[cfile]
@@ -89,6 +91,7 @@ def build_lib_dependencies(data):
                         continue
                     else:
                         dependencies.setdefault(src, {})[dst] = True
+                        logging.debug("Indirect:" + cfile + " -> " + indirect_include + " by " + include)
                         full_dependencies.append(Dependency(cfile, indirect_include, src, dst))
             else:
                 dependencies.setdefault(src, {})[dst] = True
